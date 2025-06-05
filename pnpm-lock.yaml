@@ -595,6 +595,7 @@ packages:
 
   '@parity/revive@0.0.7':
     resolution: {integrity: sha512-6pmKzocIfZQ8paLvbMzSQ9AXXkRBwB53BHHPLeJd2DX+9LBftfb/rMemidaHZiIUtwRhWC5pQ5U2Ua0rt4syZQ==}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
 
   '@pkgjs/parseargs@0.11.0':
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}

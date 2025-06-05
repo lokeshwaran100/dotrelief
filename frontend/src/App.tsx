@@ -7,7 +7,7 @@ import "./App.css";
 import polkadotLogo from "./assets/polkadot-logo.svg";
 import { useNetworkData } from "./hooks/useNetworkData";
 
-const CONTRACT_ADDRESS = "859Ac8969AdEa0C41393b3eAB299C5b32a0EA391";
+const CONTRACT_ADDRESS = "2DBc75ca798b3708e85C5Fd6e47F1Ea97936E450";
 
 function App() {
   if (!(CONTRACT_ADDRESS in contracts)) {

@@ -15,7 +15,7 @@ export function useNetworkData(contractData: ContractData) {
         const contract = new Contract(contractData.address, contractData.abi, signer);
 
         Promise.all([
-          contract.retrieve(),
+          contract.totalProposals(),
           provider.getBalance(contractData.address),
           provider.getNetwork()
         ]).then(([storedValue, contractBalance, network]) => {
