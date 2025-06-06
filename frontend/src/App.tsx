@@ -1,53 +1,44 @@
-import { contracts } from "contracts";
-import { ethersProvider } from "./ethersProvider";
-import { StoreNumber } from "./components/StoreNumber";
-import { AddMoney } from "./components/AddMoney";
-import "./App.css";
-
-import polkadotLogo from "./assets/polkadot-logo.svg";
-import { useNetworkData } from "./hooks/useNetworkData";
-
-const CONTRACT_ADDRESS = "2DBc75ca798b3708e85C5Fd6e47F1Ea97936E450";
+import React from 'react';
+import { Navbar } from './components/Navbar';
+import { Hero } from './components/Hero';
+import { useWallet } from './hooks/useWallet';
+import './App.css';
 
 function App() {
-  if (!(CONTRACT_ADDRESS in contracts)) {
-    throw new Error(
-      `${CONTRACT_ADDRESS} is missing in contracts; have you build, deployed and exported the contract?`
-    );
-  }
-  const contractData = contracts[CONTRACT_ADDRESS];
-  const { storedValue, balance, chainId } = useNetworkData(contractData);
+  const { isConnected, account, chainId, walletType, connectWallet, disconnectWallet } = useWallet();
 
   return (
-    <>
-      <img src={polkadotLogo} className="mx-auto h-52	p-4 logo" alt="Polkadot logo" />
-      {ethersProvider ? (
-        <div className="container mx-auto p-2 leading-6">
-          <h2 className="text-2xl font-bold">Success!</h2>
-          <p>Metamask wallet installed.</p>
-          <p>
-            Connected to chain ID: <span className="font-bold">{chainId}</span>
+    <div className="min-h-screen bg-white">
+      <Navbar 
+        onConnectWallet={connectWallet}
+        onDisconnectWallet={disconnectWallet}
+        isWalletConnected={isConnected}
+        account={account}
+        walletType={walletType}
+      />
+      <Hero />
+      
+      {/* Wallet Status (for development) - can be removed in production */}
+      {isConnected && (
+        <div className="fixed bottom-4 right-4 bg-green-100 border border-green-400 text-green-700 px-4 py-2 rounded-lg shadow-lg max-w-xs">
+          <p className="text-sm">
+            <strong>🎉 {walletType} Connected</strong><br/>
+            Account: {account?.slice(0, 6)}...{account?.slice(-4)}<br/>
+            Chain ID: {chainId}
           </p>
-          <p>
-            Value stored on smart contract: <span className="font-bold">{storedValue}</span>
-          </p>
-          <p>
-            Smart contract balance: <span className="font-bold">{balance}</span>
-          </p>
-          <div className="border rounded-md my-5 p-2 w-full align-top">
-            <h3 className="font-bold text-lg">Transactions</h3>
-            <div className="w-full grid grid-cols-2">
-              <StoreNumber contractData={contractData} />
-              <AddMoney contractData={contractData} />
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="container mx-auto p-2 leading-6">
-          Metamask wallet not installed. Chain interaction is disabled.
         </div>
       )}
-    </>
+      
+      {/* Wallet Not Detected Warning */}
+      {!window.ethereum && !(window as any).talisman?.ethereum && (
+        <div className="fixed bottom-4 left-4 bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-2 rounded-lg shadow-lg max-w-xs">
+          <p className="text-sm">
+            <strong>⚠️ No Wallet Detected</strong><br/>
+            Please install Talisman or MetaMask wallet
+          </p>
+        </div>
+      )}
+    </div>
   );
 }
 
