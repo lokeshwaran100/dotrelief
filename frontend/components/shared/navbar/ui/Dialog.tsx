@@ -150,7 +150,7 @@ export function CreateDialog() {
         }
         <div className="grid w-full max-w-sm items-center gap-1.5">
           <Label htmlFor="amount">Amount</Label>
-          <Input type="number" id="amount" placeholder="Enter In BNB" name="amount" value={form.amount} onChange={handleChange}/>
+          <Input type="number" id="amount" placeholder="Enter In WND" name="amount" value={form.amount} onChange={handleChange}/>
         </div>
         <div className="grid w-full max-w-sm items-center gap-1.5">
           <Label htmlFor="description">Description</Label>
