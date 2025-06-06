@@ -61,7 +61,7 @@ export const Navbar = () => {
     return (
     <NavContainer className=" max-w-10xl mx-auto ">
         <div className="flex gap-16 items-center">
-          <h1 className="font-bold text-2xl text-uiprimary">Karna</h1>
+          <h1 className="font-bold text-2xl text-uiprimary">Dot Relief</h1>
           <ul className=" flex gap-8 tracking-wider">
             <Link href={"/"}>
             <li className={` hover:text-uiprimary text-base ${selected==="home"&&"text-uiprimary"}`} onClick={()=>setSelected("home")}>Home</li>
