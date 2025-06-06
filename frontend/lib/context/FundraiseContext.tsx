@@ -86,6 +86,7 @@ export const FundRaiseContextProvider: React.FC<FundRaiseContextProviderProps> =
         const karna_contract=await CommonKarnaContractSetup(signer);
         const timeLeft:Number=secondsLeft(ProductData.endDate);
         const tx=await karna_contract?.createDirectProposal(ProductData.title,ethers.utils.parseEther(ProductData.amount.toString()));
+        console.log("the tx is", tx, tx.wait());
         const respose=await tx.wait();
         let proposalId=parseInt(respose.events[0].data);
         console.log("the proposal id is",proposalId);

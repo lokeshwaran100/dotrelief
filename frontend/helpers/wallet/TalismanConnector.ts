@@ -1,4 +1,5 @@
 import { Connector, Chain } from 'wagmi';
+import { westendAssetHub } from '../network/GetSupportedChainsForWagmi';
 
 declare global {
   interface Window {
@@ -24,18 +25,24 @@ export class TalismanConnector extends Connector<
   readonly name = 'Talisman';
   readonly ready = typeof window !== 'undefined' && !!window.talismanEth;
 
-  #provider?: TalismanProvider;
+  private provider?: TalismanProvider;
 
   constructor({ chains = [], options: _ }: { chains?: Chain[]; options: TalismanConnectorOptions }) {
-    super({ chains, options: {} });
+    super({ chains: [westendAssetHub], options: {} });
   }
 
   async connect({ chainId }: { chainId?: number } = {}) {
     try {
-      const provider = await this.getProvider();
+      const provider = await this.getProvider({ chainId });
       if (!provider) throw new Error('Provider not found');
 
       this.emit('message', { type: 'connecting' });
+
+      // Request access and switch to Westend chain
+      await provider.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: `0x${westendAssetHub.id.toString(16)}` }],
+      });
 
       const accounts = await provider.request({
         method: 'eth_requestAccounts'
@@ -48,15 +55,11 @@ export class TalismanConnector extends Connector<
       provider.on('chainChanged', this.onChainChanged);
       provider.on('disconnect', this.onDisconnect);
 
-      // Get initial chain id
-      const id = await this.getChainId();
-      const unsupported = this.isChainUnsupported(id);
-
       return {
         account,
         chain: {
-          id,
-          unsupported
+          id: westendAssetHub.id,
+          unsupported: false
         },
         provider
       };
@@ -69,6 +72,13 @@ export class TalismanConnector extends Connector<
       }
       throw error;
     }
+  }
+
+  async switchChain(chainId: number): Promise<Chain> {
+    if (chainId !== westendAssetHub.id) {
+      throw new Error('Chain not supported by Talisman connector');
+    }
+    return westendAssetHub;
   }
 
   async disconnect() {
@@ -91,19 +101,15 @@ export class TalismanConnector extends Connector<
   }
 
   async getChainId() {
-    const provider = await this.getProvider();
-    if (!provider) throw new Error('Provider not found');
-    const chainId = await provider.request({
-      method: 'eth_chainId'
-    });
-    return Number(chainId);
+    return westendAssetHub.id;
   }
 
-  async getProvider() {
-    if (typeof window === 'undefined') return;
-    if (this.#provider) return this.#provider;
-    this.#provider = window.talismanEth;
-    return this.#provider;
+  async getProvider({ chainId }: { chainId?: number } = {}) {
+    if (typeof window === 'undefined') throw new Error('Window is undefined');
+    if (this.provider) return this.provider;
+    if (!window.talismanEth) throw new Error('Talisman provider not found');
+    this.provider = window.talismanEth;
+    return this.provider;
   }
 
   async getSigner() {
@@ -127,7 +133,7 @@ export class TalismanConnector extends Connector<
 
   protected onChainChanged = (chainId: string | number) => {
     const id = normalizeChainId(chainId);
-    const unsupported = this.isChainUnsupported(id);
+    const unsupported = id !== westendAssetHub.id;
     this.emit('change', { chain: { id, unsupported } });
   };
 

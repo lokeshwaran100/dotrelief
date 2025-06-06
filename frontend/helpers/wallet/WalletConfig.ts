@@ -1,23 +1,23 @@
-import { getDefaultWallets, connectorsForWallets, Wallet, Chain as RainbowKitChain } from "@rainbow-me/rainbowkit";
+import { connectorsForWallets, Wallet } from "@rainbow-me/rainbowkit";
 import { createClient, configureChains, Connector } from "wagmi";
 import { publicProvider } from "wagmi/providers/public";
-import { mainnet } from "wagmi/chains";
 import { jsonRpcProvider } from "wagmi/providers/jsonRpc";
 import { TalismanConnector } from "./TalismanConnector";
+import { westendAssetHub } from "../network/GetSupportedChainsForWagmi";
 
 // Define supported chains
-const supportedChains = [mainnet];
+const supportedChains = [westendAssetHub];
 
 export const { provider, webSocketProvider } = configureChains(
   supportedChains,
-  [publicProvider()],
+  [
+    jsonRpcProvider({
+      rpc: (chain) => ({
+        http: chain.rpcUrls.default.http[0],
+      }),
+    }),
+  ],
 );
-
-const { wallets } = getDefaultWallets({
-  appName: "DeRent",
-  projectId: "94aab0d500c33cbdbd76938499913c8f",
-  chains: supportedChains,
-});
 
 // Create custom wallet for Talisman
 const talismanWallet = (): Wallet<Connector> => ({
@@ -34,14 +34,12 @@ const talismanWallet = (): Wallet<Connector> => ({
       connector,
       mobile: {
         getUri: async () => {
-          // Talisman doesn't support WalletConnect, so we'll redirect to download
           window.open('https://talisman.xyz/download', '_blank');
           return '';
         }
       },
       qrCode: {
         getUri: async () => {
-          // Talisman doesn't support QR codes
           return '';
         },
         instructions: {
@@ -81,11 +79,10 @@ const talismanWallet = (): Wallet<Connector> => ({
   }
 });
 
-// Combine default wallets with Talisman
+// Only use Talisman wallet
 const connectors = connectorsForWallets([
-  ...wallets,
   {
-    groupName: 'More',
+    groupName: 'Recommended',
     wallets: [talismanWallet()]
   }
 ]);

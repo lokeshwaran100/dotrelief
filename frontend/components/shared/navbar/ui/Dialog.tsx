@@ -29,8 +29,6 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { CalendarIcon } from "@radix-ui/react-icons"
 import { format } from "date-fns"
 
-
-
 export function CreateDialog() {
   const {storeInitialFundDetails}=useFundRaiseContext();
   const [form, setForm]= useState<AddFundRaiseProps>({
@@ -71,7 +69,7 @@ export function CreateDialog() {
 
   const handleSubmit=(e:React.FormEvent)=>{
     e.preventDefault();
-    console.log("Form Submitted",form);
+    console.log("Form Submitted with signer",form, signer);
     storeInitialFundDetails(signer, form);
   }
 
