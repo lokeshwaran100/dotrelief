@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'react-hot-toast';
 import { ethersProvider } from '../ethersProvider';
 
 export const useWallet = () => {
@@ -51,15 +52,27 @@ export const useWallet = () => {
         }
       } catch (error) {
         console.error('Error checking connection:', error);
+        toast.error('Error checking wallet connection', {
+          position: 'top-center',
+          icon: '⚠️'
+        });
       }
     }
   };
 
   const connectWallet = async () => {
     if (!ethersProvider) {
-      alert('Please install MetaMask or Talisman wallet');
+      toast.error('Please install MetaMask or Talisman wallet', {
+        duration: 5000,
+        position: 'top-center',
+        icon: '🦊'
+      });
       return;
     }
+
+    const toastId = toast.loading('Connecting wallet...', {
+      position: 'top-center'
+    });
 
     try {
       // Try Talisman first, then fallback to standard ethereum
@@ -69,7 +82,11 @@ export const useWallet = () => {
       let currentProvider = talismanProvider || standardProvider;
 
       if (!currentProvider) {
-        alert('No wallet detected. Please install Talisman or MetaMask wallet.');
+        toast.error('No wallet detected. Please install Talisman or MetaMask wallet', {
+          duration: 5000,
+          position: 'top-center',
+          icon: '⚠️'
+        });
         return;
       }
 
@@ -81,11 +98,23 @@ export const useWallet = () => {
         const network = await ethersProvider.getNetwork();
         setChainId(network.chainId.toString());
         
-        console.log(`Connected to ${talismanProvider ? 'Talisman' : 'MetaMask/Other'} wallet`);
+        const walletName = talismanProvider ? 'Talisman' : 'MetaMask';
+        const shortAddress = `${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}`;
+        toast.success(`Connected to ${walletName}\n${shortAddress}`, {
+          duration: 4000,
+          position: 'top-center',
+          icon: '🎉'
+        });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error connecting wallet:', error);
-      alert('Failed to connect wallet. Please make sure your wallet is unlocked and try again.');
+      toast.error('Failed to connect wallet\nPlease make sure your wallet is unlocked', {
+        duration: 5000,
+        position: 'top-center',
+        icon: '❌'
+      });
+    } finally {
+      toast.dismiss(toastId);
     }
   };
 
@@ -94,7 +123,11 @@ export const useWallet = () => {
     setAccount(null);
     setChainId(null);
     setWalletType(null);
-    console.log('Wallet disconnected');
+    toast.success('Wallet disconnected', {
+      duration: 3000,
+      position: 'top-center',
+      icon: '👋'
+    });
   };
 
   const handleAccountsChanged = (accounts: string[]) => {
@@ -102,15 +135,31 @@ export const useWallet = () => {
       setIsConnected(false);
       setAccount(null);
       setWalletType(null);
+      toast.error('Wallet disconnected', {
+        duration: 4000,
+        position: 'top-center',
+        icon: '⚠️'
+      });
     } else {
       setAccount(accounts[0]);
       setIsConnected(true);
+      const shortAddress = `${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}`;
+      toast.success(`Account changed\n${shortAddress}`, {
+        duration: 4000,
+        position: 'top-center',
+        icon: '🔄'
+      });
     }
   };
 
   const handleChainChanged = (chainId: string) => {
     setChainId(chainId);
-    window.location.reload(); // Reload the page when network changes
+    toast.success('Network changed', {
+      duration: 3000,
+      position: 'top-center',
+      icon: '🔄'
+    });
+    window.location.reload();
   };
 
   return {

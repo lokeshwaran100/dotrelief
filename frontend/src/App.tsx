@@ -1,22 +1,96 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Toaster, toast } from 'react-hot-toast';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
+import { FundraiseModal, FundraiseFormData } from './components/FundraiseModal';
 import { useWallet } from './hooks/useWallet';
+import { useFundraise } from './hooks/useFundraise';
 import './App.css';
 
 function App() {
   const { isConnected, account, chainId, walletType, connectWallet, disconnectWallet } = useWallet();
+  const { createFundraiseProposal, isLoading } = useFundraise();
+  const [isFundraiseModalOpen, setIsFundraiseModalOpen] = useState(false);
+
+  const handleStartFundraise = () => {
+    if (!isConnected) {
+      toast.error('Please connect your wallet first', {
+        duration: 4000,
+        position: 'top-center',
+        icon: '🦊'
+      });
+      return;
+    }
+    setIsFundraiseModalOpen(true);
+  };
+
+  const handleFundraiseSubmit = async (formData: FundraiseFormData) => {
+    if (!account) {
+      toast.error('Wallet not connected', {
+        duration: 4000,
+        position: 'top-center',
+        icon: '🦊'
+      });
+      return;
+    }
+
+    const toastId = toast.loading('Creating fundraise...', {
+      position: 'top-center'
+    });
+
+    try {
+      const result = await createFundraiseProposal(formData, account);
+      toast.success(
+        <div>
+          <p>Fundraise created successfully!</p>
+          <p className="text-sm mt-1">Proposal ID: {result.proposalId}</p>
+          <p className="text-xs mt-1 text-gray-500 break-all">{result.transactionHash}</p>
+        </div>,
+        {
+          duration: 5000,
+          position: 'top-center',
+          icon: '🎉'
+        }
+      );
+      setIsFundraiseModalOpen(false);
+    } catch (error: any) {
+      console.error('Error creating fundraise:', error);
+      toast.error(
+        <div>
+          <p>Failed to create fundraise</p>
+          <p className="text-sm mt-1 text-red-500">{error.message}</p>
+        </div>,
+        {
+          duration: 5000,
+          position: 'top-center',
+          icon: '❌'
+        }
+      );
+    } finally {
+      toast.dismiss(toastId);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white">
+      <Toaster />
       <Navbar 
         onConnectWallet={connectWallet}
         onDisconnectWallet={disconnectWallet}
+        onStartFundraise={handleStartFundraise}
         isWalletConnected={isConnected}
         account={account}
         walletType={walletType}
       />
       <Hero />
+      
+      {/* Fundraise Modal */}
+      <FundraiseModal
+        isOpen={isFundraiseModalOpen}
+        onClose={() => setIsFundraiseModalOpen(false)}
+        onSubmit={handleFundraiseSubmit}
+        isLoading={isLoading}
+      />
       
       {/* Wallet Status (for development) - can be removed in production */}
       {isConnected && (

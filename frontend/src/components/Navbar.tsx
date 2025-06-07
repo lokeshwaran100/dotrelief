@@ -4,6 +4,7 @@ import { ethersProvider } from '../ethersProvider';
 interface NavbarProps {
   onConnectWallet: () => void;
   onDisconnectWallet: () => void;
+  onStartFundraise: () => void;
   isWalletConnected: boolean;
   account?: string | null;
   walletType?: string | null;
@@ -12,6 +13,7 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({ 
   onConnectWallet, 
   onDisconnectWallet, 
+  onStartFundraise,
   isWalletConnected, 
   account,
   walletType 
@@ -34,7 +36,10 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Action Buttons */}
         <div className="flex space-x-4 items-center">
-          <button className="bg-pink-500 text-white px-6 py-2 rounded-lg font-medium hover:bg-pink-600 transition-colors">
+          <button 
+            onClick={onStartFundraise}
+            className="bg-pink-500 text-white px-6 py-2 rounded-lg font-medium hover:bg-pink-600 transition-colors"
+          >
             Start a Fundraise
           </button>
           
