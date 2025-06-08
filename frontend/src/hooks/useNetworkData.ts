@@ -18,11 +18,19 @@ export function useNetworkData(contractData: ContractData) {
           contract.totalProposals(),
           provider.getBalance(contractData.address),
           provider.getNetwork()
-        ]).then(([storedValue, contractBalance, network]) => {
-          setStoredValue(storedValue.toString());
+        ]).then(([totalProposals, contractBalance, network]) => {
+          // Convert BigInt to string properly
+          setStoredValue(totalProposals.toString());
           setBalance(`${formatEther(contractBalance)} ETH`);
           setChainId(network.chainId.toString());
+        }).catch(error => {
+          console.error('Error fetching network data:', error);
+          setStoredValue('Error');
+          setBalance('Error');
+          setChainId('Error');
         });
+      }).catch(error => {
+        console.error('Error getting signer:', error);
       });
     }
   }, [contractData.abi, contractData.address]);
